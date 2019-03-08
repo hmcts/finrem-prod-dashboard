@@ -1,5 +1,24 @@
-<% process_request(params[:service]) %>
+<% services_status = service_status(params[:service]) %>
 
-<div class="gridster">
-  <span data-row="1" data-col="1" data-sizex="0" data-sizey="1" data-id="service_state_1" data-view="State" data-text=""></span>
-</div>
+<h1>
+  <span style="<%= services_status['status'] == 'Passed' ? 'background-color: #2ECC9A;' : 'background-color: #DF182A;' %>">
+  <%= services_status['name'] %>
+  </span>
+</h1>
+<% if !services_status['dependencies'].empty? %>
+<dl>
+  <h3 align="center">Dependent Services Status:</h3>
+<% services_status['dependencies'].each do |k| %>
+    <dt>
+      <a href="<%= k['url'] %>">
+        <h1 style="<%= k['status'] == 'Passed' ? 'background-color: #2ECC9A;;' : 'background-color: #DF182A;' %>">
+          <%= k['name'] %> : <%= k['status'] %>
+        </h1>
+      </a>
+    </dt>
+
+<% end %>
+</dl>
+<% else %>
+  <h3 align="center">No dependencies.</h3>
+<% end %>

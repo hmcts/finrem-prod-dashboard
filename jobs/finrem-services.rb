@@ -4,13 +4,11 @@ require 'json'
 SERVICES = { "FR-COS" => "http://finrem-cos-prod.service.core-compute-prod.internal/health",
            "FR-NS" => "http://finrem-ns-prod.service.core-compute-prod.internal/health",
            "FR-DGCS" => "http://finrem-dgcs-prod.service.core-compute-prod.internal/health",
-           "FR-EMCA" => "http://finrem-dgcs-prod.service.core-compute-prod.internal/health",
+           "FR-EMCA" => "http://finrem-emca-prod.service.core-compute-prod.internal/health",
            "FR-PS" => "http://finrem-ps-prod.service.core-compute-prod.internal/health"
 }
 
-# That method will actually fetch the data from Hiptest
-# and return an array of hashes containing test runs names and status
-def request_hiptest_status(url)
+def request_health_status(url)
   uri = URI(url)
 
   result = Net::HTTP.start(uri.host, uri.port) do |http|
@@ -42,12 +40,10 @@ def get_status_text(status)
   return "Unknown"
 end
 
-# Every 30 seconds the dashboard will fetch status from Hiptest
-# then refresh the tiles accordingly
-SCHEDULER.every '300s' do\
+SCHEDULER.every '300m' do\
 
   SERVICES.each do|name,url|
-  test_runs = request_hiptest_status(url)
+  test_runs = request_health_status(url)
 
     if test_runs
       send_event(name, text: get_status_text(test_runs))

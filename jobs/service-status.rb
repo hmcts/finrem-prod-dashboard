@@ -1,16 +1,15 @@
 require 'net/http'
 require 'json'
 
-SERVICES = { "FR-COS" => "http://finrem-cos-prod.service.core-compute-prod.internal/health",
-             "FR-NS" => "http://finrem-ns-prod.service.core-compute-prod.internal/health",
-             "FR-DGCS" => "http://finrem-dgcs-prod.service.core-compute-prod.internal/health",
-             "FR-EMCA" => "http://finrem-dgcs-prod.service.core-compute-prod.internal/health",
-             "FR-PS" => "http://finrem-ps-prod.service.core-compute-prod.internal/health"
+SERVICES_NAMES = {
+    "FR-COS" => "finrem-case-orchestration-service",
+    "FR-NS" =>  "finrem-notification-service",
+    "FR-DGCS" =>  "finrem-document-generator-client",
+    "FR-EMCA" =>  "finrem-evidence-management-client",
+    "FR-PS" =>  "finrem-payment-service"
 }
 
-# That method will actually fetch the data from Hiptest
-# and return an array of hashes containing test runs names and status
-def request_finrem_status(url)
+def request_finrem_service_status(url)
   uri = URI(url)
 
   result = Net::HTTP.start(uri.host, uri.port) do |http|
@@ -28,9 +27,32 @@ def request_finrem_status(url)
   # puts result
 end
 
-def process_request(service)
-  test_runs = request_finrem_status(SERVICES[service])
+def filter_dependencies(result)
+  return result.select {|service, val| service != 'refreshScope' and service != 'diskSpace' and service != 'hystrix' and service != 'status'}
+end
 
-  send_event("service_state_1", text: JSON.pretty_unparse(test_runs, { quirks_mode: true }))
-  # send_event("service_details", text: test_runs['details'])
+def collect_all_dependencies(filter_services)
+  return filter_services.map {|service, val| {
+      'name' => service,
+      'status' => get_status_text(val['status']),
+      'url' => val['details'] ? val['details']['uri'] : val['uri']
+  }}
+end
+
+def service_status(service)
+  test_runs = request_finrem_service_status(SERVICES[service])
+  result = test_runs['details'] ? test_runs['details'] : test_runs
+
+  if result
+    all_dependencies = collect_all_dependencies(filter_dependencies(result))
+    puts 'depend services'
+    puts  all_dependencies
+
+    return {
+        "name" => SERVICES_NAMES[service],
+        "status" => get_status_text(test_runs['status']),
+        "url" => SERVICES[service],
+        "dependencies" => all_dependencies
+    }
+  end
 end
