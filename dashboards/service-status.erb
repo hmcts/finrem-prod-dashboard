@@ -1,7 +1,12 @@
+<style>
+  .passed {background-color: #2ECC9A;}
+  .failed   {background-color: #DF182A;}
+</style>
+
 <% services_status = service_status(params[:service]) %>
 
 <h1>
-  <span style="<%= services_status['status'] == 'Passed' ? 'background-color: #2ECC9A;' : 'background-color: #DF182A;' %>">
+  <span class="<%= services_status['status'] == 'Passed' ? 'passed' : 'failed' %>">
   <%= services_status['name'] %>
   </span>
 </h1>
@@ -11,7 +16,7 @@
 <% services_status['dependencies'].each do |k| %>
     <dt>
       <a href="<%= k['url'] %>">
-        <h1 style="<%= k['status'] == 'Passed' ? 'background-color: #2ECC9A;;' : 'background-color: #DF182A;' %>">
+        <h1 class="<%= k['status'] == 'Passed' ? 'passed' : 'failed' %>">
           <%= k['name'] %> : <%= k['status'] %>
         </h1>
       </a>

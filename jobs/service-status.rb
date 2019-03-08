@@ -45,8 +45,6 @@ def service_status(service)
 
   if result
     all_dependencies = collect_all_dependencies(filter_dependencies(result))
-    puts 'depend services'
-    puts  all_dependencies
 
     return {
         "name" => SERVICES_NAMES[service],
