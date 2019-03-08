@@ -44,7 +44,7 @@ end
 
 # Every 30 seconds the dashboard will fetch status from Hiptest
 # then refresh the tiles accordingly
-SCHEDULER.every '300s' do\
+SCHEDULER.every '5m' do\
 
   SERVICES.each do|name,url|
   test_runs = request_hiptest_status(url)
