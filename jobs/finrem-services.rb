@@ -40,7 +40,7 @@ def get_status_text(status)
   return "Unknown"
 end
 
-SCHEDULER.every '300m' do\
+SCHEDULER.every '5m' do\
 
   SERVICES.each do|name,url|
   test_runs = request_health_status(url)
