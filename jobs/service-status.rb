@@ -27,8 +27,12 @@ def request_finrem_service_status(url)
   # puts result
 end
 
+def filter_predicate(service)
+  return !%w(refreshScope diskSpace hystrix status).include?(service)
+end
+
 def filter_dependencies(result)
-  return result.select {|service, val| service != 'refreshScope' and service != 'diskSpace' and service != 'hystrix' and service != 'status'}
+  return result.select {|service, val| filter_predicate(service)}
 end
 
 def collect_all_dependencies(filter_services)
